@@ -1,15 +1,17 @@
-import mongoose ,{Schema} from "mongoose";
+import mongoose from 'mongoose';
 
-const hostelWardenSchema = new Schema({
-  empId: { type: String, required: true, unique: true },
+const wardenSchema = new mongoose.Schema({
+  empId: { type: String, required: true, unique: true }, // Unique employee ID for the warden
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   phone: { type: String, required: true },
-  block: { type: String, required: true },
-  password: { type: String, required: true },
-  otp: { type: String }
-},{timestamps: true });
+  block: { type: String, required: true }, // Block where the warden is assigned
+  password: { type: String, required: true }, // Hashed password
+  otp: { type: String },
+  otpExpiration: { type: Date },
+  verified: { type: Boolean, default: false } // Flag to indicate if the account is verified
+});
 
-const HostelWarden = mongoose.model('HostelWarden', hostelWardenSchema);
+const Warden = mongoose.model('Warden', wardenSchema);
 
-export default HostelWarden;
+export default Warden;
