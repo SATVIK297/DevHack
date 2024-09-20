@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'; // Make sure to install bcryptjs
 import jwt from 'jsonwebtoken'
 
 export const signup = async (req, res) => {
-  const { empId, name, email, phone, designation, password } = req.body;
+  const { empId, name, email,block, phone, designation, password } = req.body;
 
   try {
     let employee = await Employee.findOne({ email });
@@ -21,6 +21,7 @@ export const signup = async (req, res) => {
     employee = new Employee({
       empId,
       name,
+      block,
       email,
       phone,
       designation,
