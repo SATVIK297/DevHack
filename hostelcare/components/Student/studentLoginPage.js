@@ -3,12 +3,15 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the Ionicons icon set
+import { useDispatch } from 'react-redux'; // Import useDispatch from Redux
+import { login } from '../../redux/slices/studentSlice'; // Import the login action
 import Toast from 'react-native-toast-message';
 
 const API_URL = 'http://localhost:3000/api/v1'; // Replace with your backend API URL
 
 export default function StudentLoginPage() {
   const navigation = useNavigation();
+  const dispatch = useDispatch(); // Create a dispatch instance
   const [email, setEmail] = useState('');
   const [passcode, setPasscode] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -25,6 +28,11 @@ export default function StudentLoginPage() {
         const data = await response.json();
   
         if (response.ok) {
+          Alert.alert('Login Successful', data.message);
+          
+          // Dispatch the login action and store the user data in Redux
+          dispatch(login(data.student)); // Assuming the backend returns the student object in `data.student`
+
           Toast.show({
             text1: 'Login Successful',
             text2: data.message,

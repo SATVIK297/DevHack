@@ -44,32 +44,70 @@ export const serviceRequest = async (req, res, next) => {
 };
 
 
+// export const getServiceHistory = async (req, res, next) => {
+//     try {
+//       const  userId  = req.params.id;
+  
+//       // Validate the presence of userId
+//       if (!userId) {
+//         return next(errorHandler(400, "User ID is required"));
+//       }
+  
+//       // Find all services related to the user by userId
+//       const serviceHistory = await Services.find({ userId });
+  
+//       // If no services found
+//       if (serviceHistory.length === 0) {
+//         return res.status(404).json({
+//           message: "No service history found for this user",
+//         });
+//       }
+  
+//       // Send success response with service history
+//       return res.status(200).json({
+//         message: "Service history retrieved successfully",
+//         data: serviceHistory,
+//       });
+//     } catch (error) {
+//       console.error(error);
+//       return next(errorHandler(500, "Something went wrong. Please try again."));
+//     }
+//   };
+
+
 export const getServiceHistory = async (req, res, next) => {
-    try {
-      const  userId  = req.params.id;
-  
-      // Validate the presence of userId
-      if (!userId) {
-        return next(errorHandler(400, "User ID is required"));
+  try {
+      const rollnum = req.params.id;
+
+      // Validate the presence of roll number
+      if (!rollnum) {
+          return next(errorHandler(400, "Roll number is required"));
       }
-  
+
+      // Find the user by roll number
+      const existedUser = await Student.findOne({ registrationNumber: rollnum });
+      
+      if (!existedUser) {
+          return next(errorHandler(404, "User not found"));
+      }
+
       // Find all services related to the user by userId
-      const serviceHistory = await Services.find({ userId });
-  
+      const serviceHistory = await Services.find({ userId: existedUser._id });
+
       // If no services found
       if (serviceHistory.length === 0) {
-        return res.status(404).json({
-          message: "No service history found for this user",
-        });
+          return res.status(404).json({
+              message: "No service history found for this user",
+          });
       }
-  
+
       // Send success response with service history
       return res.status(200).json({
-        message: "Service history retrieved successfully",
-        data: serviceHistory,
+          message: "Service history retrieved successfully",
+          data: serviceHistory,
       });
-    } catch (error) {
+  } catch (error) {
       console.error(error);
       return next(errorHandler(500, "Something went wrong. Please try again."));
-    }
-  };
+  }
+};

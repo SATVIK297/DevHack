@@ -2,6 +2,10 @@ import Employee from '../models/employee.model.js';
 import { sendOtpEmail, generateOtp } from '../services/otpservice.js';
 import bcrypt from 'bcryptjs'; // Make sure to install bcryptjs
 import jwt from 'jsonwebtoken'
+import Services from "../models/services.model.js"; // Import Services model
+import {errorHandler} from "../middlewares/error.js"; // Custom error handler
+
+import User from "../models/user.model.js"; // Import User model to fetch block info
 
 export const signup = async (req, res) => {
   const { empId, name, email, block, designation, password } = req.body;
@@ -108,5 +112,111 @@ export const signin = async (req, res) => {
   } catch (error) {
     console.error('Sign-in error:', error);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
+// Update service request status from 'pending' to 'done'
+export const updateServiceStatus = async (req, res, next) => {
+  try {
+    const  serviceId  = req.params.id; // Employee sends serviceId in params
+
+    // Find the service request by its ID
+    const serviceRequest = await Services.findById(serviceId);
+
+    // If service request is not found
+    if (!serviceRequest) {
+      return next(errorHandler(404, "Service request not found"));
+    }
+
+    // Update the status of the service request to 'done'
+    serviceRequest.status = "completed";
+
+    // Save the updated service request to the database
+    await serviceRequest.save();
+
+    // Send success response
+    return res.status(200).json({
+      message: "Service request status marked as 'done' successfully",
+      data: serviceRequest,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(errorHandler(500, "Something went wrong. Please try again."));
+  }
+};
+
+
+
+
+// Get service requests based on employee's ID, designation, and block
+export const getServiceRequestsByEmployee = async (req, res, next) => {
+  try {
+    const employeeId = req.params.id; // Employee sends their employeeId in params
+
+    // Find the employee by their ID
+    const employee = await Employee.findById(employeeId);
+
+    // If employee not found
+    if (!employee) {
+      return next(errorHandler(404, "Employee not found"));
+    }
+
+    // Get the employee's designation and block
+    const { designation, block: employeeBlock } = employee;
+
+    console.log(`Employee designation: ${designation}, Block: ${employeeBlock}`);
+
+    // Define the service types based on the employee's designation
+    let serviceType;
+    switch (designation.toLowerCase()) {
+      case "room cleaner":
+        serviceType = "Room Cleaning";
+        break;
+      case "electrician":
+        serviceType = "Electricity";
+        break;
+      case "carpenter":
+        serviceType = "Furniture";
+        break;
+      default:
+        return next(errorHandler(400, "Invalid designation"));
+    }
+
+    // Find all service requests related to the employee's service type
+    const serviceRequests = await Services.find({ serviceType });
+
+    if (serviceRequests.length === 0) {
+      return res.status(404).json({
+        message: `No service requests found for designation: ${designation}`,
+      });
+    }
+
+    // Filter service requests where the student's block matches the employee's block
+    const filteredRequests = [];
+    for (const request of serviceRequests) {
+      // Find the student by the userId in the service request
+      const student = await User.findById(request.userId);
+      
+      if (student && student.block === employeeBlock) {
+        filteredRequests.push(request); // Add to filtered results if block matches
+      }
+    }
+
+    // If no service requests found after filtering by block
+    if (filteredRequests.length === 0) {
+      return res.status(404).json({
+        message: `No service requests found for designation: ${designation} in block: ${employeeBlock}`,
+      });
+    }
+
+    // Return the filtered service requests
+    return res.status(200).json({
+      message: `Service requests for designation: ${designation} in block: ${employeeBlock}`,
+      data: filteredRequests,
+    });
+  } catch (error) {
+    console.error(error);
+    return next(errorHandler(500, "Something went wrong. Please try again."));
   }
 };
