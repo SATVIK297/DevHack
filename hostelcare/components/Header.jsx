@@ -1,13 +1,19 @@
+
+
 // import React from 'react';
 // import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+// import Ionicons from 'react-native-vector-icons/Ionicons'; // Import the icon library
 
-// const Header = ({ title, onProfilePress }) => {
+// const Header = ({ title, onProfilePress, onBackPress }) => {
 //   return (
 //     <View style={styles.headerContainer}>
+//       <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
+//         <Ionicons name="arrow-back" size={24} color="#fff" /> {/* Use an icon here */}
+//       </TouchableOpacity>
 //       <Text style={styles.headerText}>{title}</Text>
 //       <TouchableOpacity onPress={onProfilePress}>
 //         <Image
-//         source={require('../assets/profile.png')}
+//           source={require('../assets/profile.png')}
 //           style={styles.profileIcon}
 //         />
 //       </TouchableOpacity>
@@ -18,7 +24,6 @@
 // const styles = StyleSheet.create({
 //   headerContainer: {
 //     flexDirection: 'row',
-//     justifyContent: 'space-between',
 //     alignItems: 'center',
 //     padding: 20,
 //     backgroundColor: '#007BFF', // Blue background color
@@ -26,7 +31,14 @@
 //     borderBottomWidth: 1,
 //     elevation: 2,
 //   },
+//   backButton: {
+//     position: 'absolute',
+//     left: 20,
+//     padding: 10,
+//   },
 //   headerText: {
+//     flex: 1,
+//     textAlign: 'center',
 //     fontSize: 20,
 //     fontWeight: 'bold',
 //     color: '#fff', // White text color for contrast
@@ -41,15 +53,16 @@
 // export default Header;
 
 
+
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons'; // Import the icon library
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const Header = ({ title, onProfilePress, onBackPress }) => {
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity onPress={onBackPress} style={styles.backButton}>
-        <Ionicons name="arrow-back" size={24} color="#fff" /> {/* Use an icon here */}
+        <Ionicons name="arrow-back" size={24} color="#fff" />
       </TouchableOpacity>
       <Text style={styles.headerText}>{title}</Text>
       <TouchableOpacity onPress={onProfilePress}>
@@ -66,23 +79,23 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#007BFF', // Blue background color
+    paddingVertical: 20, // Adjusted to ensure the button is vertically centered
+    backgroundColor: '#007BFF',
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
     elevation: 2,
   },
   backButton: {
-    position: 'absolute',
-    left: 20,
     padding: 10,
+    // Added a margin to ensure it's well spaced from the edges
+    marginLeft: 10,
   },
   headerText: {
     flex: 1,
     textAlign: 'center',
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff', // White text color for contrast
+    color: '#fff',
   },
   profileIcon: {
     width: 40,
@@ -92,4 +105,3 @@ const styles = StyleSheet.create({
 });
 
 export default Header;
-
