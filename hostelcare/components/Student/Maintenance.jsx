@@ -3,7 +3,6 @@ import { View, Text, TextInput, Button, ScrollView, StyleSheet, Dimensions, Pick
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 
 const initialLayout = { width: Dimensions.get('window').width };
-
 const Maintenance = () => {
   const [maintenanceType, setMaintenanceType] = useState('');
   const [date, setDate] = useState('');
