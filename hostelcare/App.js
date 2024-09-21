@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from './redux/store'; // Import Redux store and persistor
+import Toast from 'react-native-toast-message';
 
 // Import all necessary components
 import SplashScreen from './components/splashScreen';
@@ -24,6 +25,7 @@ import WardenDashboardPage from './components/Warden/wardenDashboard';
 import RoomCleaning from './components/Student/Roomcleaning';
 import Maintenance from './components/Student/Maintenance';
 import Header from './components/Header'; // Header for Student Dashboard
+import RoomCleanDetails from './components/Warden/roomCleanDetails';
 
 const Stack = createStackNavigator();
 
@@ -120,8 +122,23 @@ const App = () => {
                 )}
               </Stack.Screen>
 
+              <Stack.Screen name="RoomCleanDetails" options={{ headerShown: false }}>
+                {({ navigation }) => (
+                  <>
+                    <Header
+                      title="Room Cleaning Details"
+                      onProfilePress={handleProfilePress}
+                      onBackPress={() => navigation.navigate('WardenDashboard')} // Navigate back to WardenDashboard
+                    />
+                    <RoomCleanDetails />
+                  </>
+                )}
+              </Stack.Screen>
+
               <Stack.Screen name="Maintenance" component={Maintenance} options={{ title: 'Maintenance Request' }} />
             </Stack.Navigator>
+
+            <Toast ref={(ref) => Toast.setRef(ref)} />
           </SafeAreaView>
         </NavigationContainer>
       </PersistGate>

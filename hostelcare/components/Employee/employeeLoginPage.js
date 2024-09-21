@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the Ionicons icon set
+import Toast from 'react-native-toast-message';
 
 const API_URL = 'http://localhost:3000/api/v1'; // Replace with your actual backend API URL
 
@@ -10,27 +11,75 @@ export default function EmployeeLoginPage() {
   const [email, setEmail] = useState('');
   const [passcode, setPasscode] = useState('');
 
+  // const handleLogin = async () => {
+  //   try {
+  //     const response = await fetch(`${API_URL}/employee/signin`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({  email, password:passcode }),
+  //     });
+  //     if (response.status === 200) {
+  //       // Assuming successful login returns a 200 status
+  //       Alert.alert('Login Successful', 'Welcome to the Employee Dashboard!');
+  //       navigation.navigate('EmployeeDashboard'); // Navigate to Dashboard
+  //     }
+  //   } catch (error) {
+  //     console.error('Login error:', error);
+  //     if (error.response && error.response.status === 401) {
+  //       Alert.alert('Login Failed', 'Invalid email or passcode.');
+  //     } else {
+  //       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+  //     }
+  //   }
+  // };
   const handleLogin = async () => {
     try {
       const response = await fetch(`${API_URL}/employee/signin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({  email, password:passcode }),
+        body: JSON.stringify({ email, password: passcode }),
       });
+  
       if (response.status === 200) {
         // Assuming successful login returns a 200 status
-        Alert.alert('Login Successful', 'Welcome to the Employee Dashboard!');
+        const data = await response.json(); // Get response data if needed
+        Toast.show({
+          text1: 'Login Successful',
+          text2: 'Welcome to the Employee Dashboard!',
+          type: 'success',
+          position: 'bottom',
+          visibilityTime: 1500, // Show for 1.5 seconds
+        });
         navigation.navigate('EmployeeDashboard'); // Navigate to Dashboard
+      } else if (response.status === 401) {
+        Toast.show({
+          text1: 'Login Failed',
+          text2: 'Invalid email or passcode.',
+          type: 'error',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
+      } else {
+        Toast.show({
+          text1: 'Error',
+          text2: 'An unexpected error occurred. Please try again.',
+          type: 'error',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
       }
     } catch (error) {
       console.error('Login error:', error);
-      if (error.response && error.response.status === 401) {
-        Alert.alert('Login Failed', 'Invalid email or passcode.');
-      } else {
-        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
-      }
+      Toast.show({
+        text1: 'Error',
+        text2: 'Failed to connect to server. Please try again later.',
+        type: 'error',
+        position: 'bottom',
+        visibilityTime: 1500,
+      });
     }
   };
+  
 
   return (
     <View style={styles.container}>
