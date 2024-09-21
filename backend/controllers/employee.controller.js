@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import Services from "../models/services.model.js"; // Import Services model
 import {errorHandler} from "../middlewares/error.js"; // Custom error handler
 
+import User from "../models/user.model.js"; // Import User model to fetch block info
 
 export const signup = async (req, res) => {
   const { empId, name, email, block, designation, password } = req.body;
@@ -148,7 +149,6 @@ export const updateServiceStatus = async (req, res, next) => {
 
 
 
-
 // Get service requests based on employee's ID, designation, and block
 export const getServiceRequestsByEmployee = async (req, res, next) => {
   try {
@@ -171,26 +171,13 @@ export const getServiceRequestsByEmployee = async (req, res, next) => {
     let serviceType;
     switch (designation.toLowerCase()) {
       case "room cleaner":
-        serviceType = "roomclean";
+        serviceType = "Room Cleaning";
         break;
       case "electrician":
-        serviceType = "electrical";
+        serviceType = "Electricity";
         break;
       case "carpenter":
-        serviceType = "furniture";
-2222
-
-
-
-
-
-
-
-
-
-
-
-          ``
+        serviceType = "Furniture";
         break;
       default:
         return next(errorHandler(400, "Invalid designation"));

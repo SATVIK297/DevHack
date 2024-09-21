@@ -1,65 +1,83 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  TextInput,
+  Button,
+  TouchableOpacity,
+} from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import DatePicker from 'react-native-date-picker';
 
 const initialLayout = { width: Dimensions.get('window').width };
 
-const RoomCleaning = () => {
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+const ApplyRequest = ({ submitRequest }) => {
+  const [date, setDate] = useState(new Date());
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  
+  const [time, setTime] = useState(new Date());
+  const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+  
   const [description, setDescription] = useState('');
-  const [pendingRequests, setPendingRequests] = useState([
-    { id: 1, date: '20/09/2024', time: '14:00', description: 'General cleaning of room', status: 'Pending' },
-  ]);
-  const [history, setHistory] = useState([
-    { id: 1, date: '18/09/2024', time: '09:00', status: 'Completed' },
-    { id: 2, date: '19/09/2024', time: '12:00', status: 'Completed' },
-    { id: 3, date: '15/09/2024', time: '11:00', status: 'Completed' },
-    { id: 4, date: '14/08/2024', time: '08:00', status: 'Completed' },
-    { id: 5, date: '02/08/2024', time: '97:00', status: 'Completed' },
-    { id: 6, date: '01/08/2024', time: '12:00', status: 'Completed' },
 
+  const handleSubmit = useCallback(() => {
+    const formattedDate = date.toISOString().split('T')[0];
+    const formattedTime = time.toTimeString().split(' ')[0];
 
-  ]);
+    submitRequest(formattedDate, formattedTime, description);
 
-  // Submit Room Cleaning Request
-  const submitRequest = () => {
-    const newRequest = {
-      id: Date.now(),
-      date,
-      time,
-      description,
-      status: 'Pending',
-    };
-    setPendingRequests([...pendingRequests, newRequest]);
-    setDate('');
-    setTime('');
+    // Reset fields
+    setDate(new Date());
+    setTime(new Date());
     setDescription('');
-  };
+  }, [date, time, description, submitRequest]);
 
-  // Handle QR Code Generation (placeholder)
-  const generateQRCode = (requestId) => {
-    console.log(`QR Code generated for request ID: ${requestId}`);
-    // In a real app, you would integrate a QR code library here to generate a QR code
-  };
+  const showDatePicker = () => setDatePickerVisibility(true);
+  const hideDatePicker = () => setDatePickerVisibility(false);
 
-  // Tab Content Functions
-  const ApplyRequest = () => (
+  const showTimePicker = () => setTimePickerVisibility(true);
+  const hideTimePicker = () => setTimePickerVisibility(false);
+
+  return (
     <View style={styles.applyForm}>
       <Text style={styles.inputLabel}>Date</Text>
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={setDate}
-        placeholder="Enter Date (DD/MM/YYYY)"
+      <TouchableOpacity onPress={showDatePicker} style={styles.dateButton}>
+        <Text style={styles.dateText}>{date.toISOString().split('T')[0]}</Text>
+      </TouchableOpacity>
+
+      <DatePicker
+        modal
+        mode="date"
+        open={isDatePickerVisible}
+        date={date}
+        onConfirm={(selectedDate) => {
+          hideDatePicker();
+          setDate(selectedDate);
+        }}
+        onCancel={hideDatePicker}
       />
+
       <Text style={styles.inputLabel}>Time</Text>
-      <TextInput
-        style={styles.input}
-        value={time}
-        onChangeText={setTime}
-        placeholder="Enter Time (HH:MM)"
+      <TouchableOpacity onPress={showTimePicker} style={styles.dateButton}>
+        <Text style={styles.dateText}>{time.toTimeString().split(' ')[0]}</Text>
+      </TouchableOpacity>
+
+      <DatePicker
+        modal
+        mode="time"
+        open={isTimePickerVisible}
+        date={time}
+        onConfirm={(selectedTime) => {
+          hideTimePicker();
+          setTime(selectedTime);
+        }}
+        onCancel={hideTimePicker}
       />
+
       <Text style={styles.inputLabel}>Description</Text>
       <TextInput
         style={styles.input}
@@ -68,17 +86,72 @@ const RoomCleaning = () => {
         placeholder="Enter Description"
         multiline
       />
-      <Button title="Submit" onPress={submitRequest} />
+      <Button title="Submit" onPress={handleSubmit} />
     </View>
   );
+};
 
-  const PendingRequests = () => (
+const RoomCleaning = () => {
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [history, setHistory] = useState([]);
+  
+  const rollnum = '21BKT0145';
+
+  useEffect(() => {
+    fetchPendingRequests();
+    fetchRequestHistory();
+  }, []);
+
+  const submitRequest = async (date, time, description) => {
+    try {
+      const serviceType = 'Room Cleaning';
+      const requestBody = {
+        rollnum,
+        date,
+        time,
+        description,
+        serviceType,
+      };
+
+      console.log("bodyy",requestBody)
+      const response = await axios.post('http://localhost:3000/api/v1/students/service', requestBody);
+
+      console.log(response)
+
+      if (response.status === 201) {
+        const newRequest = response.data.data;
+        setPendingRequests((prev) => [...prev, newRequest]);
+      }
+    } catch (error) {
+      console.error('Failed to submit request:', error);
+    }
+  };
+
+  const fetchPendingRequests = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/v1/students/status/${rollnum}`);
+      setPendingRequests(response.data.requests || []);
+    } catch (error) {
+      console.error('Failed to fetch pending requests:', error);
+    }
+  };
+
+  const fetchRequestHistory = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/api/v1/students/status/${rollnum}`);
+      setHistory(response.data.requests || []);
+    } catch (error) {
+      console.error('Failed to fetch request history:', error);
+    }
+  };
+
+  const PendingRequests = React.memo(() => (
     <ScrollView style={styles.requestList}>
-      {pendingRequests.length === 0 ? (
+      {pendingRequests && pendingRequests.length === 0 ? (
         <Text>No pending requests</Text>
       ) : (
         pendingRequests.map((request) => (
-          <View key={request.id} style={styles.requestCard}>
+          <View key={request._id} style={styles.requestCard}>
             <Text>Date: {request.date}</Text>
             <Text>Time: {request.time}</Text>
             <Text>Description: {request.description}</Text>
@@ -86,23 +159,24 @@ const RoomCleaning = () => {
               <Text style={styles.statusLabel}>Status: </Text>
               <Text style={styles.pendingStatus}>{request.status}</Text>
             </Text>
-            {/* Button to generate QR code */}
-            <TouchableOpacity style={styles.qrButton} onPress={() => generateQRCode(request.id)}>
-              <Text style={styles.qrButtonText}>Generate QR</Text>
-            </TouchableOpacity>
           </View>
         ))
       )}
+      {qrData && (
+        <View style={styles.qrCodeContainer}>
+          <QRCode value={qrData} size={200} />
+        </View>
+      )}
     </ScrollView>
-  );
+  ));
 
-  const RequestHistory = () => (
+  const RequestHistory = React.memo(() => (
     <ScrollView style={styles.requestList}>
-      {history.length === 0 ? (
+      {history && history.length === 0 ? (
         <Text>No history available</Text>
       ) : (
         history.map((request) => (
-          <View key={request.id} style={styles.requestCard}>
+          <View key={request._id} style={styles.requestCard}>
             <Text>Date: {request.date}</Text>
             <Text>Time: {request.time}</Text>
             <Text>
@@ -113,9 +187,8 @@ const RoomCleaning = () => {
         ))
       )}
     </ScrollView>
-  );
+  ));
 
-  // Set up tabs for navigation
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: 'apply', title: 'Apply' },
@@ -124,7 +197,7 @@ const RoomCleaning = () => {
   ]);
 
   const renderScene = SceneMap({
-    apply: ApplyRequest,
+    apply: () => <ApplyRequest submitRequest={submitRequest} />,
     pending: PendingRequests,
     history: RequestHistory,
   });
@@ -149,11 +222,6 @@ const RoomCleaning = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f0f0f0',
-  },
   applyForm: {
     padding: 20,
     backgroundColor: '#fff',
@@ -176,6 +244,18 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderRadius: 5,
   },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  dateText: {
+    fontSize: 16,
+  },
   requestList: {
     padding: 20,
   },
@@ -192,24 +272,13 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontWeight: 'bold',
-    color: '#000', // Black color for the "Status:" label
+    color: '#000',
   },
   pendingStatus: {
-    color: 'red', // Red color for pending status
+    color: 'red',
   },
   completedStatus: {
-    color: 'green', // Green color for completed status
-  },
-  qrButton: {
-    marginTop: 10,
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
-  },
-  qrButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: 'green',
   },
 });
 
