@@ -10,7 +10,7 @@ const employeeSchema = new mongoose.Schema({
   password: { type: String, required: true },
   otp: { type: String },
   otpExpiration: { type: Date },
-  verified: { type: Boolean, default: false }
+  verified: { type:   Boolean, default: false }
 });
 
 const Employee = mongoose.model('Employee', employeeSchema);
