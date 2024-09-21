@@ -22,6 +22,9 @@ import WardenDashboardPage from './components/Warden/wardenDashboard';
 import RoomCleaning from './components/Student/Roomcleaning';
 import Maintenance from './components/Student/Maintenance';
 import Header from './components/Header'; // Header for Student Dashboard
+import RoomCleanDetails from './components/Warden/roomCleanDetails';
+
+
 
 const Stack = createStackNavigator();
 
@@ -101,8 +104,20 @@ const App = () => {
               </>
             )}
           </Stack.Screen>
+          <Stack.Screen name="RoomCleanDetails" options={{ headerShown: false }}>
+            {({ navigation }) => (
+              <>
+                <Header
+                  title="Room Cleaning Details"
+                  onProfilePress={handleProfilePress}
+                  onBackPress={() => navigation.navigate('WardenDashboard')} // Navigate back to WardenDashboard
+                />
+                <RoomCleanDetails />
+              </>
+            )}
+          </Stack.Screen>
 
-          {/* <Stack.Screen name="WardenDashboard" component={WardenDashboardPage} /> */}
+
 
           {/* Additional Student Pages */}
           <Stack.Screen name="RoomCleaning" options={{ headerShown: false }}>

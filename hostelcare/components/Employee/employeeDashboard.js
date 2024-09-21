@@ -98,9 +98,10 @@ const EmployeeDashboardPage = () => {
 };
 
 const styles = StyleSheet.create({
+  
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     padding: 20,
   },
   requestList: {
