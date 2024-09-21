@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken'
 import Services from "../models/services.model.js"; // Import Services model
 import {errorHandler} from "../middlewares/error.js"; // Custom error handler
 
+import User from "../models/user.model.js"; // Import User model to fetch block info
 
 export const signup = async (req, res) => {
   const { empId, name, email, block, designation, password } = req.body;
@@ -147,10 +148,6 @@ export const updateServiceStatus = async (req, res, next) => {
 
 
 
-import Services from "../models/Services.js"; // Import Services model
-import Employee from "../models/Employee.js"; // Import Employee model
-import User from "../models/User.js"; // Import User model to fetch block info
-import errorHandler from "../utils/errorHandler.js"; // Custom error handler
 
 // Get service requests based on employee's ID, designation, and block
 export const getServiceRequestsByEmployee = async (req, res, next) => {
