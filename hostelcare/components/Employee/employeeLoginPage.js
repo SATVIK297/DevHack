@@ -1,14 +1,37 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the Ionicons icon set
 
+const API_URL = 'http://localhost:3000/api/v1'; // Replace with your actual backend API URL
+
 export default function EmployeeLoginPage() {
   const navigation = useNavigation();
-  const handleLogin = () => {
-    // Add your login logic here
-    navigation.navigate('EmployeeDashboard'); // Navigate to Dashboard
+  const [email, setEmail] = useState('');
+  const [passcode, setPasscode] = useState('');
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch(`${API_URL}/employee/signin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({  email, password:passcode }),
+      });
+      if (response.status === 200) {
+        // Assuming successful login returns a 200 status
+        Alert.alert('Login Successful', 'Welcome to the Employee Dashboard!');
+        navigation.navigate('EmployeeDashboard'); // Navigate to Dashboard
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error.response && error.response.status === 401) {
+        Alert.alert('Login Failed', 'Invalid email or passcode.');
+      } else {
+        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      }
+    }
   };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -22,12 +45,16 @@ export default function EmployeeLoginPage() {
         style={styles.input}
         placeholder="Email ID"
         keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
         placeholder="Passcode (6 digits)"
         secureTextEntry
         maxLength={6} // Restrict to 6 digits
+        value={passcode}
+        onChangeText={setPasscode}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -44,7 +71,6 @@ export default function EmployeeLoginPage() {
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

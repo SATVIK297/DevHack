@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
 
 
 export const signup = async (req, res) => {
-  const { registrationNumber, name, email, phone, block, password } = req.body;
+  const { registrationNumber, name, email, block,room, password } = req.body;
 
   try {
     let student = await Student.findOne({ email });
@@ -21,8 +21,8 @@ export const signup = async (req, res) => {
       registrationNumber,
       name,
       email,
-      phone,
       block,
+      room,
       password,
       otp,
       otpExpiration
@@ -44,10 +44,10 @@ export const signup = async (req, res) => {
 
 // Verify OTP
 export const  verifyOtp = async (req, res) => {
-  const { email, otp } = req.body;
+  const {  otp } = req.body;
 
   try {
-    const student = await Student.findOne({ email });
+    const student = await Student.findOne({ otp });
     if (!student) {
       return res.status(400).json({ error: 'Invalid email' });
     }
@@ -91,7 +91,20 @@ export const signin = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    res.status(200).json({ token, message: 'Signed in successfully' });
+
+    const { password: pass, ...rest } = student._doc;
+
+    res
+      .status(200)
+      .cookie('access_token', token, {
+        httpOnly: true,
+      })
+      .json({
+        rest, 
+        message: "signed in successfully"
+      });
+
+    //res.status(200).json({ token, message: 'Signed in successfully' });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }

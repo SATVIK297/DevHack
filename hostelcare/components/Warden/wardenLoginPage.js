@@ -1,15 +1,47 @@
-import React from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the Ionicons icon set
 
+const API_URL = 'http://localhost:3000/api/v1'; // Replace with your backend URL
+
 export default function WardenLoginPage() {
   const navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [passcode, setPasscode] = useState('');
+  
+  const handleLogin = async () => {
+    if (email === '' || passcode === '') {
+      Alert.alert('Error', 'Please fill out both fields.');
+      return;
+    }
 
-  const handleLogin = () => {
-    // Add your login logic here
-    navigation.navigate('WardenDashboard'); // Navigate to Dashboard
+    try {
+      const response = await fetch(`${API_URL}/warden/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password:passcode,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Login Successful', 'Welcome to your dashboard!');
+        navigation.navigate('WardenDashboard'); // Navigate to the WardenDashboard page upon successful login
+      } else {
+        Alert.alert('Login Failed', data.error || 'Invalid credentials. Please try again.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Error', 'An error occurred while logging in.');
+    }
   };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -23,12 +55,16 @@ export default function WardenLoginPage() {
         style={styles.input}
         placeholder="Email ID"
         keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
         placeholder="Passcode (6 digits)"
         secureTextEntry
         maxLength={6} // Restrict to 6 digits
+        value={passcode}
+        onChangeText={setPasscode}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -46,7 +82,6 @@ export default function WardenLoginPage() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -57,14 +92,14 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 20, // Position it at the top
-    left: 20, // Position it to the left
-    zIndex: 1, // Ensure it’s above other elements
+    top: 20,
+    left: 20,
+    zIndex: 1,
   },
   image: {
-    width: 100, // Adjust as needed
-    height: 100, // Adjust as needed
-    marginBottom: 20, // Space between the image and title
+    width: 100,
+    height: 100,
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,

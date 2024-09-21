@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Picker } from '@react-native-picker/picker';
 
+const API_URL = 'http://localhost:3000/api/v1'; // Replace with your actual backend API URL
+
 export default function EmployeeRegistrationPage() {
   const navigation = useNavigation();
   const [name, setName] = useState('');
@@ -16,19 +18,53 @@ export default function EmployeeRegistrationPage() {
   const [isOtpVisible, setIsOtpVisible] = useState(false);
   const [inputFocus, setInputFocus] = useState({});
 
-  const handleRegister = () => {
-    if (email.endsWith('@vit.ac.in')) {
-      Alert.alert('OTP Sent', 'A 6-digit OTP has been sent to your email.');
-      setIsOtpVisible(true);
-    } else {
-      Alert.alert('Error', 'Please use a valid email address with @vitstudent.ac.in');
-    }
+  const handleRegister = async () => {
+   // if (email.endsWith('@vit.ac.in')) {
+      try {
+        const response = await fetch(`${API_URL}/employee/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ empId:regNumber,name, email, block, designation, password:passcode }),
+        });
+        
+        const data = await response.json();
+
+        if (response.ok) {
+          Alert.alert('OTP Sent', 'A 6-digit OTP has been sent to your email.');
+          setIsOtpVisible(true);
+        } else {
+          Alert.alert('Error', data.error || 'Registration failed. Please try again.');
+        }
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Failed to connect to server. Please try again later.');
+      }
+    // else {
+    //   Alert.alert('Error', 'Please use a valid email address with @vit.ac.in');
+    // }
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     if (otp.length === 6) {
-      Alert.alert('Registration Successful', 'You have been registered successfully.');
-      navigation.navigate('EmployeeLogin');
+      try {
+        const response = await fetch(`${API_URL}/employee/verify-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({  otp }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          Alert.alert('Registration Successful', 'You have been registered successfully.');
+          navigation.navigate('EmployeeLogin');
+        } else {
+          Alert.alert('Error', data.error || 'OTP verification failed. Please try again.');
+        }
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Failed to connect to server. Please try again later.');
+      }
     } else {
       Alert.alert('Error', 'Please enter a valid 6-digit OTP.');
     }
@@ -53,10 +89,10 @@ export default function EmployeeRegistrationPage() {
           />
           <TextInput
             style={[styles.input, inputFocus.regNumber && styles.focusedInput]}
-            placeholder="6-digit Employee ID" // Updated placeholder
+            placeholder="6-digit Employee ID"
             value={regNumber}
             onChangeText={setRegNumber}
-            maxLength={6} // Changed to 6 digits
+            maxLength={6}
             onFocus={() => setInputFocus({ ...inputFocus, regNumber: true })}
             onBlur={() => setInputFocus({ ...inputFocus, regNumber: false })}
           />
@@ -132,7 +168,6 @@ export default function EmployeeRegistrationPage() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -162,7 +197,6 @@ const styles = StyleSheet.create({
   },
   focusedInput: {
     borderColor: '#FFA500', // Golden/Orange color when focused
-    // backgroundColor: '#fff3e0', // Light orange background when focused
   },
   button: {
     backgroundColor: '#4CAF50',
@@ -180,6 +214,6 @@ const styles = StyleSheet.create({
     height: 50,
     marginBottom: 15,
     borderBottomWidth: 1, // Add border only at the bottom
-    borderColor: '#ccc', // Border color // Remove right border
+    borderColor: '#ccc', // Border color
   },
 });
