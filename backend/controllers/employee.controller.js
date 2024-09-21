@@ -147,10 +147,7 @@ export const updateServiceStatus = async (req, res, next) => {
 
 
 
-import Services from "../models/Services.js"; // Import Services model
-import Employee from "../models/Employee.js"; // Import Employee model
-import User from "../models/User.js"; // Import User model to fetch block info
-import errorHandler from "../utils/errorHandler.js"; // Custom error handler
+
 
 // Get service requests based on employee's ID, designation, and block
 export const getServiceRequestsByEmployee = async (req, res, next) => {
@@ -181,6 +178,19 @@ export const getServiceRequestsByEmployee = async (req, res, next) => {
         break;
       case "carpenter":
         serviceType = "furniture";
+2222
+
+
+
+
+
+
+
+
+
+
+
+          ``
         break;
       default:
         return next(errorHandler(400, "Invalid designation"));
