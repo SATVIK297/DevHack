@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#ffffff',
   },
   noticeBoard: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,
     marginBottom: 20,
