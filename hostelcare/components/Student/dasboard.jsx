@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Modal, Button, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+
 const StudentDashboard = () => {
   const navigation = useNavigation(); // Use navigation hook
   const [modalVisible, setModalVisible] = useState(false);
