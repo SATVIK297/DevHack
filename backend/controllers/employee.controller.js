@@ -171,13 +171,13 @@ export const getServiceRequestsByEmployee = async (req, res, next) => {
     let serviceType;
     switch (designation.toLowerCase()) {
       case "room cleaner":
-        serviceType = "roomclean";
+        serviceType = "Room Cleaning";
         break;
       case "electrician":
-        serviceType = "electrical";
+        serviceType = "Electricity";
         break;
       case "carpenter":
-        serviceType = "furniture";
+        serviceType = "Furniture";
         break;
       default:
         return next(errorHandler(400, "Invalid designation"));
