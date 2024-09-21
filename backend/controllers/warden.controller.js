@@ -92,6 +92,20 @@ export const signin = async (req, res) => {
     }
 
     const token = jwt.sign({ id: warden._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+    const { password: pass, ...rest } = warden._doc;
+
+    res
+      .status(200)
+      .cookie('access_token', token, {
+        httpOnly: true,
+      })
+      .json({
+        rest, 
+        message: "signed in successfully"
+      });
+
+
     res.status(200).json({ token, message: 'Signed in successfully' });
   } catch (error) {
     console.error('Sign-in error:', error);

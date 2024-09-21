@@ -83,19 +83,28 @@ export const signin = async (req, res) => {
 
     console.log('Employee:', employee); // Log employee details
 
-    // Check password
     const isMatch = await bcrypt.compare(password, employee.password);
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Check if verified
     if (!employee.verified) {
       return res.status(400).json({ error: 'Account not verified. Please verify OTP.' });
     }
 
-    // Generate JWT token
     const token = jwt.sign({ id: employee._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+    const { password: pass, ...rest } = employee._doc;
+
+    res
+      .status(200)
+      .cookie('access_token', token, {
+        httpOnly: true,
+      })
+      .json({
+        rest, 
+        message: "signed in successfully"
+      });
 
     res.status(200).json({ token, message: 'Signed in successfully' });
   } catch (error) {
