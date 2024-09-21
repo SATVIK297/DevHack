@@ -5,7 +5,7 @@ import { sendOtpEmail, generateOtp } from '../services/otpservice.js';
 import jwt from 'jsonwebtoken';
 
 export const signup = async (req, res) => {
-  const { empId, name, email, phone, block, password } = req.body;
+  const { empId, name, email, block, password } = req.body;
 
   try {
     let warden = await Warden.findOne({ email });
@@ -22,7 +22,6 @@ export const signup = async (req, res) => {
       empId,
       name,
       email,
-      phone,
       block,
       password: hashedPassword,
       otp,
@@ -41,11 +40,11 @@ export const signup = async (req, res) => {
 
 
 export const verifyOtp = async (req, res) => {
-  const { email, otp } = req.body;
+  const {  otp } = req.body;
 
   try {
     // Find the warden by email
-    const warden = await Warden.findOne({ email });
+    const warden = await Warden.findOne({ otp });
     if (!warden) {
       return res.status(400).json({ error: 'Warden not found' });
     }
@@ -106,7 +105,6 @@ export const signin = async (req, res) => {
       });
 
 
-    res.status(200).json({ token, message: 'Signed in successfully' });
   } catch (error) {
     console.error('Sign-in error:', error);
     res.status(500).json({ error: 'Server error' });

@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'; // Make sure to install bcryptjs
 import jwt from 'jsonwebtoken'
 
 export const signup = async (req, res) => {
-  const { empId, name, email,block, phone, designation, password } = req.body;
+  const { empId, name, email, block, designation, password } = req.body;
 
   try {
     let employee = await Employee.findOne({ email });
@@ -23,15 +23,14 @@ export const signup = async (req, res) => {
       name,
       block,
       email,
-      phone,
       designation,
       password: hashedPassword, // Use the hashed password
       otp,
-      otpExpiration
+      otpExpiration,
     });
 
     await employee.save();
-    await sendOtpEmail(email, otp);
+    await sendOtpEmail(email, otp); // Send OTP to employee's email
 
     return res.status(201).json({ message: 'Employee registered. OTP sent to email.' });
   } catch (error) {
@@ -46,10 +45,10 @@ export const signup = async (req, res) => {
 };
 
 export const verifyOtp = async (req, res) => {
-  const { email, otp } = req.body;
+  const {  otp } = req.body;
 
   try {
-    const employee = await Employee.findOne({ email });
+    const employee = await Employee.findOne({ otp });
     if (!employee) {
       return res.status(400).json({ error: 'Invalid email' });
     }
@@ -81,7 +80,7 @@ export const signin = async (req, res) => {
       return res.status(400).json({ error: 'Employee not found' });
     }
 
-    console.log('Employee:', employee); // Log employee details
+    //console.log('Employee:', employee); // Log employee details
 
     const isMatch = await bcrypt.compare(password, employee.password);
     if (!isMatch) {
@@ -106,7 +105,6 @@ export const signin = async (req, res) => {
         message: "signed in successfully"
       });
 
-    res.status(200).json({ token, message: 'Signed in successfully' });
   } catch (error) {
     console.error('Sign-in error:', error);
     res.status(500).json({ error: 'Server error' });

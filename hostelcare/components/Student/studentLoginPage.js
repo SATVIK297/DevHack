@@ -97,20 +97,43 @@
 // });
 
 
+
+
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the Ionicons icon set
+
+const API_URL = 'http://localhost:3000/api/v1'; // Replace with your backend API URL
 
 export default function StudentLoginPage() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
+  const [passcode, setPasscode] = useState('');
   const [emailError, setEmailError] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // Check if the email is valid
     if (email.endsWith('@vitstudent.ac.in')) {
-      navigation.navigate('StudentDashboard'); // Navigate to Dashboard
+      try {
+        const response = await fetch(`${API_URL}/students/signin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, passcode }),
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          Alert.alert('Login Successful', data.message);
+          navigation.navigate('StudentDashboard'); // Navigate to Dashboard
+        } else {
+          Alert.alert('Error', data.error || 'Login failed. Please try again.');
+        }
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Error', 'Failed to connect to server. Please try again later.');
+      }
     } else {
       setEmailError('Please enter a valid email ending with @vitstudent.ac.in');
     }
@@ -146,6 +169,8 @@ export default function StudentLoginPage() {
         placeholder="Passcode (6 digits)"
         secureTextEntry
         maxLength={6} // Restrict to 6 digits
+        value={passcode}
+        onChangeText={setPasscode}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
