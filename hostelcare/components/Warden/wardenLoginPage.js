@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the Ionicons icon set
+import Toast from 'react-native-toast-message';
 
 const API_URL = 'http://localhost:3000/api/v1'; // Replace with your backend URL
 
@@ -10,12 +11,49 @@ export default function WardenLoginPage() {
   const [email, setEmail] = useState('');
   const [passcode, setPasscode] = useState('');
   
+  // const handleLogin = async () => {
+  //   if (email === '' || passcode === '') {
+  //     Alert.alert('Error', 'Please fill out both fields.');
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await fetch(`${API_URL}/warden/signin`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         email,
+  //         password:passcode,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       Alert.alert('Login Successful', 'Welcome to your dashboard!');
+  //       navigation.navigate('WardenDashboard'); // Navigate to the WardenDashboard page upon successful login
+  //     } else {
+  //       Alert.alert('Login Failed', data.error || 'Invalid credentials. Please try again.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Login error:', error);
+  //     Alert.alert('Error', 'An error occurred while logging in.');
+  //   }
+  // };
   const handleLogin = async () => {
     if (email === '' || passcode === '') {
-      Alert.alert('Error', 'Please fill out both fields.');
+      Toast.show({
+        text1: 'Error',
+        text2: 'Please fill out both fields.',
+        type: 'error',
+        position: 'bottom',
+        visibilityTime: 1500,
+      });
       return;
     }
-
+  
     try {
       const response = await fetch(`${API_URL}/warden/signin`, {
         method: 'POST',
@@ -24,23 +62,42 @@ export default function WardenLoginPage() {
         },
         body: JSON.stringify({
           email,
-          password:passcode,
+          password: passcode,
         }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok) {
-        Alert.alert('Login Successful', 'Welcome to your dashboard!');
+        Toast.show({
+          text1: 'Login Successful',
+          text2: 'Welcome to your dashboard!',
+          type: 'success',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
         navigation.navigate('WardenDashboard'); // Navigate to the WardenDashboard page upon successful login
       } else {
-        Alert.alert('Login Failed', data.error || 'Invalid credentials. Please try again.');
+        Toast.show({
+          text1: 'Login Failed',
+          text2: data.error || 'Invalid credentials. Please try again.',
+          type: 'error',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
       }
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('Error', 'An error occurred while logging in.');
+      Toast.show({
+        text1: 'Error',
+        text2: 'An error occurred while logging in.',
+        type: 'error',
+        position: 'bottom',
+        visibilityTime: 1500,
+      });
     }
   };
+  
 
   return (
     <View style={styles.container}>

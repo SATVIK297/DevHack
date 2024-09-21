@@ -3,6 +3,7 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, StatusBar, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import Toast from 'react-native-toast-message';
 
 // Import all necessary components
 import SplashScreen from './components/splashScreen';
@@ -135,7 +136,9 @@ const App = () => {
 
           <Stack.Screen name="Maintenance" component={Maintenance} options={{ title: 'Maintenance Request' }} />
         </Stack.Navigator>
+        <Toast ref={(ref) => Toast.setRef(ref)} />
       </SafeAreaView>
+      
     </NavigationContainer>
   );
 };

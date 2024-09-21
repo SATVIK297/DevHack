@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'reac
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Picker } from '@react-native-picker/picker';
+import Toast from 'react-native-toast-message';
 
 const API_URL = 'http://localhost:3000/api/v1'; // Replace with your actual backend API URL
 
@@ -18,57 +19,148 @@ export default function EmployeeRegistrationPage() {
   const [isOtpVisible, setIsOtpVisible] = useState(false);
   const [inputFocus, setInputFocus] = useState({});
 
-  const handleRegister = async () => {
-   // if (email.endsWith('@vit.ac.in')) {
-      try {
-        const response = await fetch(`${API_URL}/employee/signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ empId:regNumber,name, email, block, designation, password:passcode }),
-        });
+  // const handleRegister = async () => {
+  //  // if (email.endsWith('@vit.ac.in')) {
+  //     try {
+  //       const response = await fetch(`${API_URL}/employee/signup`, {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({ empId:regNumber,name, email, block, designation, password:passcode }),
+  //       });
         
-        const data = await response.json();
+  //       const data = await response.json();
 
-        if (response.ok) {
-          Alert.alert('OTP Sent', 'A 6-digit OTP has been sent to your email.');
-          setIsOtpVisible(true);
-        } else {
-          Alert.alert('Error', data.error || 'Registration failed. Please try again.');
-        }
-      } catch (error) {
-        console.error(error);
-        Alert.alert('Error', 'Failed to connect to server. Please try again later.');
+  //       if (response.ok) {
+  //         Alert.alert('OTP Sent', 'A 6-digit OTP has been sent to your email.');
+  //         setIsOtpVisible(true);
+  //       } else {
+  //         Alert.alert('Error', data.error || 'Registration failed. Please try again.');
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //       Alert.alert('Error', 'Failed to connect to server. Please try again later.');
+  //     }
+  //   // else {
+  //   //   Alert.alert('Error', 'Please use a valid email address with @vit.ac.in');
+  //   // }
+  // };
+
+  // const handleVerifyOtp = async () => {
+  //   if (otp.length === 6) {
+  //     try {
+  //       const response = await fetch(`${API_URL}/employee/verify-otp`, {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //         body: JSON.stringify({  otp }),
+  //       });
+
+  //       const data = await response.json();
+
+  //       if (response.ok) {
+  //         Alert.alert('Registration Successful', 'You have been registered successfully.');
+  //         navigation.navigate('EmployeeLogin');
+  //       } else {
+  //         Alert.alert('Error', data.error || 'OTP verification failed. Please try again.');
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //       Alert.alert('Error', 'Failed to connect to server. Please try again later.');
+  //     }
+  //   } else {
+  //     Alert.alert('Error', 'Please enter a valid 6-digit OTP.');
+  //   }
+  // };
+
+  const handleRegister = async () => {
+    try {
+      const response = await fetch(`${API_URL}/employee/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ empId: regNumber, name, email, block, designation, password: passcode }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        Toast.show({
+          text1: 'OTP Sent',
+          text2: 'A 6-digit OTP has been sent to your email.',
+          type: 'success',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
+        setIsOtpVisible(true);
+      } else {
+        Toast.show({
+          text1: 'Error',
+          text2: data.error || 'Registration failed. Please try again.',
+          type: 'error',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
       }
-    // else {
-    //   Alert.alert('Error', 'Please use a valid email address with @vit.ac.in');
-    // }
+    } catch (error) {
+      console.error(error);
+      Toast.show({
+        text1: 'Error',
+        text2: 'Failed to connect to server. Please try again later.',
+        type: 'error',
+        position: 'bottom',
+        visibilityTime: 1500,
+      });
+    }
   };
-
+  
   const handleVerifyOtp = async () => {
     if (otp.length === 6) {
       try {
         const response = await fetch(`${API_URL}/employee/verify-otp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({  otp }),
+          body: JSON.stringify({ otp }),
         });
-
+  
         const data = await response.json();
-
+  
         if (response.ok) {
-          Alert.alert('Registration Successful', 'You have been registered successfully.');
+          Toast.show({
+            text1: 'Registration Successful',
+            text2: 'You have been registered successfully.',
+            type: 'success',
+            position: 'bottom',
+            visibilityTime: 1500,
+          });
           navigation.navigate('EmployeeLogin');
         } else {
-          Alert.alert('Error', data.error || 'OTP verification failed. Please try again.');
+          Toast.show({
+            text1: 'Error',
+            text2: data.error || 'OTP verification failed. Please try again.',
+            type: 'error',
+            position: 'bottom',
+            visibilityTime: 1500,
+          });
         }
       } catch (error) {
         console.error(error);
-        Alert.alert('Error', 'Failed to connect to server. Please try again later.');
+        Toast.show({
+          text1: 'Error',
+          text2: 'Failed to connect to server. Please try again later.',
+          type: 'error',
+          position: 'bottom',
+          visibilityTime: 1500,
+        });
       }
     } else {
-      Alert.alert('Error', 'Please enter a valid 6-digit OTP.');
+      Toast.show({
+        text1: 'Error',
+        text2: 'Please enter a valid 6-digit OTP.',
+        type: 'error',
+        position: 'bottom',
+        visibilityTime: 1500,
+      });
     }
   };
+  
 
   return (
     <View style={styles.container}>
