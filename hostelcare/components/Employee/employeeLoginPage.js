@@ -3,35 +3,18 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Image, Alert } fro
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons'; // Import the Ionicons icon set
 import Toast from 'react-native-toast-message';
+import { useDispatch } from 'react-redux'; // Import useDispatch to dispatch actions
+import { login } from '../../redux/slices/employeeSlice'; // Import the login action from employeeSlice
 
 const API_URL = 'http://localhost:3000/api/v1'; // Replace with your actual backend API URL
 
 export default function EmployeeLoginPage() {
   const navigation = useNavigation();
+  const dispatch = useDispatch(); // Initialize useDispatch hook
+
   const [email, setEmail] = useState('');
   const [passcode, setPasscode] = useState('');
 
-  // const handleLogin = async () => {
-  //   try {
-  //     const response = await fetch(`${API_URL}/employee/signin`, {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({  email, password:passcode }),
-  //     });
-  //     if (response.status === 200) {
-  //       // Assuming successful login returns a 200 status
-  //       Alert.alert('Login Successful', 'Welcome to the Employee Dashboard!');
-  //       navigation.navigate('EmployeeDashboard'); // Navigate to Dashboard
-  //     }
-  //   } catch (error) {
-  //     console.error('Login error:', error);
-  //     if (error.response && error.response.status === 401) {
-  //       Alert.alert('Login Failed', 'Invalid email or passcode.');
-  //     } else {
-  //       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
-  //     }
-  //   }
-  // };
   const handleLogin = async () => {
     try {
       const response = await fetch(`${API_URL}/employee/signin`, {
@@ -42,7 +25,13 @@ export default function EmployeeLoginPage() {
   
       if (response.status === 200) {
         // Assuming successful login returns a 200 status
-        const data = await response.json(); // Get response data if needed
+        const data = await response.json(); // Get the response data
+        const employeeData = data.rest; // Extract the `rest` object which contains employee details
+        console.log('Employee Data:', employeeData);
+        dispatch(login(employeeData));
+        // // Dispatch login action to save employee data in Redux
+        // dispatch(login(data.rest)); // Assuming `data.employee` contains the employee details
+
         Toast.show({
           text1: 'Login Successful',
           text2: 'Welcome to the Employee Dashboard!',
@@ -50,7 +39,9 @@ export default function EmployeeLoginPage() {
           position: 'bottom',
           visibilityTime: 1500, // Show for 1.5 seconds
         });
-        navigation.navigate('EmployeeDashboard'); // Navigate to Dashboard
+
+        // Navigate to Dashboard
+        navigation.navigate('EmployeeDashboard');
       } else if (response.status === 401) {
         Toast.show({
           text1: 'Login Failed',
@@ -79,7 +70,6 @@ export default function EmployeeLoginPage() {
       });
     }
   };
-  
 
   return (
     <View style={styles.container}>

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import DatePicker from 'react-native-date-picker';
+import { useSelector } from 'react-redux';
 
 const initialLayout = { width: Dimensions.get('window').width };
 
@@ -95,28 +96,30 @@ const RoomCleaning = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [history, setHistory] = useState([]);
   
-  const rollnum = '21BKT0145';
+  const studentData = useSelector(state => state.student.studentData);
 
   useEffect(() => {
-    fetchPendingRequests();
-    fetchRequestHistory();
-  }, []);
+    if (studentData?.registrationNumber) {
+      fetchPendingRequests();
+      fetchRequestHistory();
+    }
+  }, [studentData]);
 
   const submitRequest = async (date, time, description) => {
     try {
       const serviceType = 'Room Cleaning';
       const requestBody = {
-        rollnum,
+        rollnum: studentData.registrationNumber,
         date,
         time,
         description,
         serviceType,
       };
 
-      console.log("bodyy",requestBody)
+      console.log("Request body:", requestBody);
       const response = await axios.post('http://localhost:3000/api/v1/students/service', requestBody);
 
-      console.log(response)
+      console.log(response);
 
       if (response.status === 201) {
         const newRequest = response.data.data;
@@ -127,18 +130,31 @@ const RoomCleaning = () => {
     }
   };
 
+  // const fetchPendingRequests = async () => {
+  //   try {
+  //     const response = await axios.get(`http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`);
+  //     setPendingRequests(response.data.requests || []);
+  //     console.log(response.data)
+  //   } catch (error) {
+  //     console.error('Failed to fetch pending requests:', error);
+  //   }
+  // };
   const fetchPendingRequests = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/v1/students/status/${rollnum}`);
-      setPendingRequests(response.data.requests || []);
+      const response = await axios.get(`http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`);
+      // Assuming the requests are in the data field of the response
+      const requests = response.data.data || []; // Accessing 'data' to get the requests
+      setPendingRequests(requests);
+      console.log('Fetched pending requests:', requests);
     } catch (error) {
       console.error('Failed to fetch pending requests:', error);
     }
   };
+  
 
   const fetchRequestHistory = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/v1/students/status/${rollnum}`);
+      const response = await axios.get(`http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`);
       setHistory(response.data.requests || []);
     } catch (error) {
       console.error('Failed to fetch request history:', error);
@@ -147,7 +163,7 @@ const RoomCleaning = () => {
 
   const PendingRequests = React.memo(() => (
     <ScrollView style={styles.requestList}>
-      {pendingRequests && pendingRequests.length === 0 ? (
+      {pendingRequests.length === 0 ? (
         <Text>No pending requests</Text>
       ) : (
         pendingRequests.map((request) => (
@@ -167,13 +183,14 @@ const RoomCleaning = () => {
 
   const RequestHistory = React.memo(() => (
     <ScrollView style={styles.requestList}>
-      {history && history.length === 0 ? (
+      {history.length === 0 ? (
         <Text>No history available</Text>
       ) : (
         history.map((request) => (
           <View key={request._id} style={styles.requestCard}>
             <Text>Date: {request.date}</Text>
             <Text>Time: {request.time}</Text>
+            <Text>Description: {request.description}</Text>
             <Text>
               <Text style={styles.statusLabel}>Status: </Text>
               <Text style={styles.completedStatus}>{request.status}</Text>
