@@ -26,6 +26,11 @@ import RoomCleaning from './components/Student/Roomcleaning';
 import Maintenance from './components/Student/Maintenance';
 import Header from './components/Header'; // Header for Student Dashboard
 import RoomCleanDetails from './components/Warden/roomCleanDetails';
+import Counselor from './components/Student/counselor';
+import MessChange from './components/Student/mess';
+
+
+
 
 const Stack = createStackNavigator();
 
@@ -108,7 +113,7 @@ const App = () => {
                 )}
               </Stack.Screen>
 
-              {/* Additional Student Pages */}
+              {/* Room Cleaning Student Pages */}
               <Stack.Screen name="RoomCleaning" options={{ headerShown: false }}>
                 {({ navigation }) => (
                   <>
@@ -135,7 +140,49 @@ const App = () => {
                 )}
               </Stack.Screen>
 
-              <Stack.Screen name="Maintenance" component={Maintenance} options={{ title: 'Maintenance Request' }} />
+
+              {/* Maintenance Student Pages */}
+              <Stack.Screen name="Maintenance" options={{ headerShown: false }}>
+                {({ navigation }) => (
+                  <>
+                    <Header
+                      title="Maintenance Request"
+                      onProfilePress={handleProfilePress}
+                      onBackPress={() => navigation.goBack()} // Use goBack function
+                    />
+                    <Maintenance />
+                  </>
+                )}
+              </Stack.Screen>
+
+              {/* Counselor Student Pages */}
+              <Stack.Screen name="Counselor" options={{ headerShown: false }}>
+                {({ navigation }) => (
+                  <>
+                    <Header
+                      title="Counselor Details"
+                      onProfilePress={handleProfilePress}
+                      onBackPress={() => navigation.goBack()} // Use goBack function
+                    />
+                   <Counselor/>
+                  </>
+                )}
+              </Stack.Screen>
+
+              {/* Mess Change Student Pages */}
+              <Stack.Screen name="MessChange" options={{ headerShown: false }}>
+                {({ navigation }) => (
+                  <>
+                    <Header
+                      title="Mess Request"
+                      onProfilePress={handleProfilePress}
+                      onBackPress={() => navigation.goBack()} // Use goBack function
+                    />
+                   <MessChange/>
+                  </>
+                )}
+              </Stack.Screen>
+
             </Stack.Navigator>
 
             <Toast ref={(ref) => Toast.setRef(ref)} />

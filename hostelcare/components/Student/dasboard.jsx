@@ -42,7 +42,11 @@ const StudentDashboard = () => {
       navigation.navigate('RoomCleaning'); // Navigate to the RoomCleaning page
     } else if (section === 'Maintenance') {
       navigation.navigate('Maintenance'); // Navigate to the Maintenance page
-    } else {
+    } else if (section === 'Counselor'){
+      navigation.navigate('Counselor');
+    } else if (section === 'Mess'){
+      navigation.navigate('MessChange');
+    }else{
       console.log(`${section} button pressed`);
     }
   };
