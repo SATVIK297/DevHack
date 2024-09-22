@@ -178,11 +178,11 @@ const RoomCleaning = () => {
           </View>
         ))
       )}
-      {qrData && (
+      {/* {qrData && (
         <View style={styles.qrCodeContainer}>
           <QRCode value={qrData} size={200} />
         </View>
-      )}
+      )} */}
     </ScrollView>
   ));
 
