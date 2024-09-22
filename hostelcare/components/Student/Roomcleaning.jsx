@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
@@ -13,17 +10,20 @@ import {
   Button,
   TouchableOpacity,
 } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import DatePicker from 'react-native-date-picker';
-import QRCode from 'react-native-qrcode-svg';
+import { useSelector } from 'react-redux';
 
 const initialLayout = { width: Dimensions.get('window').width };
 
 const ApplyRequest = ({ submitRequest }) => {
   const [date, setDate] = useState(new Date());
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  
   const [time, setTime] = useState(new Date());
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+  
   const [description, setDescription] = useState('');
 
   const handleSubmit = useCallback(() => {
@@ -96,32 +96,17 @@ const ApplyRequest = ({ submitRequest }) => {
 const RoomCleaning = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [history, setHistory] = useState([]);
-  
-  const studentData = useSelector(state => state.student.studentData);
+  const [qrData, setQrData] = useState(null);  // Add this for QR data state
+  const [selectedRequestId, setSelectedRequestId] = useState(null); // Track selected request ID
 
-  // Fetch pending requests and history when the component mounts
+  const studentData = useSelector((state) => state.student.studentData);
+
   useEffect(() => {
     if (studentData?.registrationNumber) {
       fetchPendingRequests();
       fetchRequestHistory();
     }
   }, [studentData]);
-
-  const fetchRequestsData = async () => {
-    try {
-      setLoading(true);
-      const pendingResponse = await axios.get(`http://localhost:3000/api/v1/students/status/${rollnum}`);
-      const historyResponse = await axios.get(`http://localhost:3000/api/v1/students/status/${rollnum}`);
-
-      // Split responses based on request status if needed (e.g., 'pending' vs 'completed')
-      setPendingRequests(pendingResponse.data.requests || []);
-      setHistory(historyResponse.data.requests || []);
-    } catch (error) {
-      console.error('Failed to fetch requests data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const submitRequest = async (date, time, description) => {
     try {
@@ -134,10 +119,10 @@ const RoomCleaning = () => {
         serviceType,
       };
 
-      console.log("Request body:", requestBody);
-      const response = await axios.post('http://localhost:3000/api/v1/students/service', requestBody);
-
-      console.log(response);
+      const response = await axios.post(
+        'http://localhost:3000/api/v1/students/service',
+        requestBody
+      );
 
       if (response.status === 201) {
         const newRequest = response.data.data;
@@ -148,9 +133,34 @@ const RoomCleaning = () => {
     }
   };
 
+  const fetchPendingRequests = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`
+      );
+      const requests = response.data.data || [];
+      setPendingRequests(requests);
+    } catch (error) {
+      console.error('Failed to fetch pending requests:', error);
+    }
+  };
+
+  const fetchRequestHistory = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`
+      );
+      setHistory(response.data.requests || []);
+    } catch (error) {
+      console.error('Failed to fetch request history:', error);
+    }
+  };
+
+  // Function to handle QR code generation for the request
   const handleGenerateQR = (request) => {
     const qrInfo = `${request._id}:${request.date}:${request.time}`;
-    setQrData(qrInfo);
+    setQrData(qrInfo); // Set the generated QR data
+    setSelectedRequestId(request._id); // Track the request ID for which QR is generated
   };
 
   const PendingRequests = React.memo(() => (
@@ -168,14 +178,16 @@ const RoomCleaning = () => {
               <Text style={styles.pendingStatus}>{request.status}</Text>
             </Text>
 
+            {/* Generate QR Button */}
             <TouchableOpacity
-              style={styles.generateQRButton}
+              style={styles.qrButton}
               onPress={() => handleGenerateQR(request)}
             >
-              <Text style={styles.generateQRText}>Generate QR</Text>
+              <Text style={styles.qrButtonText}>Generate QR</Text>
             </TouchableOpacity>
 
-            {qrData === `${request._id}:${request.date}:${request.time}` && (
+            {/* Display QR code if the selected request matches */}
+            {selectedRequestId === request._id && qrData && (
               <View style={styles.qrCodeContainer}>
                 <QRCode value={qrData} size={200} />
               </View>
@@ -249,46 +261,29 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
-  qrCodeContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',  
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  generateQRButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  generateQRText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
   inputLabel: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  dateButton: {
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
     padding: 10,
-    backgroundColor: '#eee',
+    marginBottom: 15,
     borderRadius: 5,
-    marginBottom: 10,
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+    alignItems: 'center',
+    marginBottom: 15,
   },
   dateText: {
     fontSize: 16,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
-    padding: 10,
-    height: 100,
-    textAlignVertical: 'top',
-    marginBottom: 20,
   },
   requestList: {
     padding: 20,
@@ -296,7 +291,7 @@ const styles = StyleSheet.create({
   requestCard: {
     backgroundColor: '#fff',
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 10,
     marginBottom: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -306,13 +301,246 @@ const styles = StyleSheet.create({
   },
   statusLabel: {
     fontWeight: 'bold',
+    color: '#000',
   },
   pendingStatus: {
-    color: 'orange',
+    color: 'red',
   },
   completedStatus: {
     color: 'green',
   },
+  qrButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#007bff',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  qrButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  qrCodeContainer: {
+    marginTop: 15,
+    alignItems: 'center',
+  },
 });
 
 export default RoomCleaning;
+
+
+// const RoomCleaning = () => {
+//   const [pendingRequests, setPendingRequests] = useState([]);
+//   const [history, setHistory] = useState([]);
+//   const [qrData, setQrData] = useState(null);
+//   const studentData = useSelector(state => state.student.studentData);
+
+//   useEffect(() => {
+//     if (studentData?.registrationNumber) {
+//       fetchPendingRequests();
+//       fetchRequestHistory();
+//     }
+//   }, [studentData]);
+
+//   const submitRequest = async (date, time, description) => {
+//     try {
+//       const serviceType = 'Room Cleaning';
+//       const requestBody = {
+//         rollnum: studentData.registrationNumber,
+//         date,
+//         time,
+//         description,
+//         serviceType,
+//       };
+
+//       console.log("Request body:", requestBody);
+//       const response = await axios.post('http://localhost:3000/api/v1/students/service', requestBody);
+
+//       console.log(response);
+
+//       if (response.status === 201) {
+//         const newRequest = response.data.data;
+//         setPendingRequests((prev) => [...prev, newRequest]);
+//       }
+//     } catch (error) {
+//       console.error('Failed to submit request:', error);
+//     }
+//   };
+
+//   // const fetchPendingRequests = async () => {
+//   //   try {
+//   //     const response = await axios.get(http://localhost:3000/api/v1/students/status/${studentData.registrationNumber});
+//   //     setPendingRequests(response.data.requests || []);
+//   //     console.log(response.data)
+//   //   } catch (error) {
+//   //     console.error('Failed to fetch pending requests:', error);
+//   //   }
+//   // };
+//   const fetchPendingRequests = async () => {
+//     try {
+//       const response = await axios.get(`http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`);
+//       // Assuming the requests are in the data field of the response
+//       const requests = response.data.data || []; // Accessing 'data' to get the requests
+//       setPendingRequests(requests);
+//       console.log('Fetched pending requests:', requests);
+//     } catch (error) {
+//       console.error('Failed to fetch pending requests:', error);
+//     }
+//   };
+  
+
+//   const fetchRequestHistory = async () => {
+//     try {
+//       const response = await axios.get(`http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`);
+//       setHistory(response.data.requests || []);
+//     } catch (error) {
+//       console.error('Failed to fetch request history:', error);
+//     }
+//   };
+
+//   const handleGenerateQR = (request) => {
+//     const qrInfo = `${request._id}:${request.date}:${request.time}`;
+//     setQrData(qrInfo); // Set the generated QR data
+//     setSelectedRequestId(request._id); // Track the request ID for which QR is generated
+//   };
+
+//   const PendingRequests = React.memo(() => (
+//     <ScrollView style={styles.requestList}>
+//       {pendingRequests.length === 0 ? (
+//         <Text>No pending requests</Text>
+//       ) : (
+//         pendingRequests.map((request) => (
+//           <View key={request._id} style={styles.requestCard}>
+//             <Text>Date: {request.date}</Text>
+//             <Text>Time: {request.time}</Text>
+//             <Text>Description: {request.description}</Text>
+//             <Text>
+//               <Text style={styles.statusLabel}>Status: </Text>
+//               <Text style={styles.pendingStatus}>{request.status}</Text>
+//             </Text>
+
+//           </View>
+//         ))
+//       )}
+//       {qrData && (
+//         <View style={styles.qrCodeContainer}>
+//           <QRCode value={qrData} size={200} />
+//         </View>
+//       )}
+//     </ScrollView>
+//   ));
+
+//   const RequestHistory = React.memo(() => (
+//     <ScrollView style={styles.requestList}>
+//       {history.length === 0 ? (
+//         <Text>No history available</Text>
+//       ) : (
+//         history.map((request) => (
+//           <View key={request._id} style={styles.requestCard}>
+//             <Text>Date: {request.date}</Text>
+//             <Text>Time: {request.time}</Text>
+//             <Text>Description: {request.description}</Text>
+//             <Text>
+//               <Text style={styles.statusLabel}>Status: </Text>
+//               <Text style={styles.completedStatus}>{request.status}</Text>
+//             </Text>
+//           </View>
+//         ))
+//       )}
+//     </ScrollView>
+//   ));
+
+//   const [index, setIndex] = useState(0);
+//   const [routes] = useState([
+//     { key: 'apply', title: 'Apply' },
+//     { key: 'pending', title: 'Pending' },
+//     { key: 'history', title: 'History' },
+//   ]);
+
+//   const renderScene = SceneMap({
+//     apply: () => <ApplyRequest submitRequest={submitRequest} />,
+//     pending: PendingRequests,
+//     history: RequestHistory,
+//   });
+
+//   return (
+//     <TabView
+//       navigationState={{ index, routes }}
+//       renderScene={renderScene}
+//       onIndexChange={setIndex}
+//       initialLayout={initialLayout}
+//       renderTabBar={(props) => (
+//         <TabBar
+//           {...props}
+//           indicatorStyle={{ backgroundColor: '#007bff' }}
+//           style={{ backgroundColor: '#fff' }}
+//           activeColor="#007bff"
+//           inactiveColor="#ccc"
+//         />
+//       )}
+//     />
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   applyForm: {
+//     padding: 20,
+//     backgroundColor: '#fff',
+//     borderRadius: 10,
+//     shadowColor: '#000',
+//     shadowOpacity: 0.1,
+//     shadowRadius: 5,
+//     shadowOffset: { width: 0, height: 2 },
+//     elevation: 3,
+//   },
+//   inputLabel: {
+//     fontSize: 16,
+//     fontWeight: 'bold',
+//     marginBottom: 5,
+//   },
+//   input: {
+//     borderWidth: 1,
+//     borderColor: '#ccc',
+//     padding: 10,
+//     marginBottom: 15,
+//     borderRadius: 5,
+//   },
+//   dateButton: {
+//     borderWidth: 1,
+//     borderColor: '#ccc',
+//     padding: 10,
+//     borderRadius: 5,
+//     backgroundColor: '#f9f9f9',
+//     alignItems: 'center',
+//     marginBottom: 15,
+//   },
+//   dateText: {
+//     fontSize: 16,
+//   },
+//   requestList: {
+//     padding: 20,
+//   },
+//   requestCard: {
+//     backgroundColor: '#fff',
+//     padding: 15,
+//     borderRadius: 10,
+//     marginBottom: 10,
+//     shadowColor: '#000',
+//     shadowOpacity: 0.1,
+//     shadowRadius: 5,
+//     shadowOffset: { width: 0, height: 2 },
+//     elevation: 3,
+//   },
+//   statusLabel: {
+//     fontWeight: 'bold',
+//     color: '#000',
+//   },
+//   pendingStatus: {
+//     color: 'red',
+//   },
+//   completedStatus: {
+//     color: 'green',
+//   },
+// });
+
+// export default RoomCleaning;
