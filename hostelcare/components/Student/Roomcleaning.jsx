@@ -150,7 +150,13 @@ const RoomCleaning = () => {
       const response = await axios.get(
         `http://localhost:3000/api/v1/students/status/${studentData.registrationNumber}`
       );
-      setHistory(response.data.requests || []);
+      //setHistory(response.data.requests || []);
+      const requests = response.data.data || [];
+      const pending = requests.filter(request => request.status === 'pending');
+    const completed = requests.filter(request => request.status === 'completed');
+
+    setPendingRequests(pending); // Set only pending requests
+    setHistory(completed);       // Set only completed requests
     } catch (error) {
       console.error('Failed to fetch request history:', error);
     }

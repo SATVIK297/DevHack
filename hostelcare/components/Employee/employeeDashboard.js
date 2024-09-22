@@ -2,22 +2,30 @@
 // import axios from 'axios'; // Import Axios
 // import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 // import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+// import { useSelector } from 'react-redux'; // Import useSelector to get employeeId from Redux
 
 // const initialLayout = { width: Dimensions.get('window').width };
 
 // const EmployeeDashboardPage = () => {
 //   const [pendingRequests, setPendingRequests] = useState([]);
 //   const [history, setHistory] = useState([]);
-  
-//   const employeeId = '66ef2cad6d960d4a7a293345'; // Replace with actual employee ID
 
+//   // Get employeeId from the Redux store
+//   const employeeData = useSelector(state => state.employee.employeeData); // Adjust this to your actual state shape
+//  //const employeeId = '66ef2cad6d960d4a7a293345';
+//  console.log('idddddd',employeeData._id)
+
+//  // Log the employee data to the console to verify if it's being fetched correctly
+// //  console.log('Employee Data:', employeeData);
 //   useEffect(() => {
-//     fetchServiceRequests();
-//   }, []);
+//     if (employeeData._id) {
+//       fetchServiceRequests();
+//     }
+//   }, [employeeData._id]);
 
 //   const fetchServiceRequests = async () => {
 //     try {
-//       const response = await axios.get(`http://localhost:3000/api/v1/employee/request/${employeeId}`);
+//       const response = await axios.get(`http://localhost:3000/api/v1/employee/request/${employeeData._id}`);
 //       const { data } = response.data;
 //       console.log('Fetched data:', data); // Log fetched data
 
@@ -113,7 +121,6 @@
 //   container: {
 //     flex: 1,
 //     backgroundColor: '#ffffff',
-//     padding: 20,
 //   },
 //   requestList: {
 //     padding: 20,
@@ -154,7 +161,6 @@
 // export default EmployeeDashboardPage;
 
 
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import Axios
 import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
@@ -168,12 +174,8 @@ const EmployeeDashboardPage = () => {
   const [history, setHistory] = useState([]);
 
   // Get employeeId from the Redux store
-  const employeeData = useSelector(state => state.employee.employeeData); // Adjust this to your actual state shape
- //const employeeId = '66ef2cad6d960d4a7a293345';
- console.log('idddddd',employeeData._id)
+  const employeeData = useSelector(state => state.employee.employeeData);
 
- // Log the employee data to the console to verify if it's being fetched correctly
-//  console.log('Employee Data:', employeeData);
   useEffect(() => {
     if (employeeData._id) {
       fetchServiceRequests();
@@ -184,7 +186,7 @@ const EmployeeDashboardPage = () => {
     try {
       const response = await axios.get(`http://localhost:3000/api/v1/employee/request/${employeeData._id}`);
       const { data } = response.data;
-      console.log('Fetched data:', data); // Log fetched data
+      console.log('Fetched data:', data);
 
       const pending = data.filter(request => request.status === 'pending');
       const completed = data.filter(request => request.status === 'completed');
@@ -193,6 +195,19 @@ const EmployeeDashboardPage = () => {
       setHistory(completed);
     } catch (error) {
       console.error('Failed to fetch service requests:', error);
+    }
+  };
+
+  // Function to mark the service request as completed
+  const markAsCompleted = async (requestId) => {
+    try {
+      const response = await axios.put(`http://localhost:3000/api/v1/employee/status/${requestId}`);
+      console.log('Marked as completed:', response.data);
+
+      // Fetch the updated list of requests
+      fetchServiceRequests();
+    } catch (error) {
+      console.error('Failed to mark as completed:', error);
     }
   };
 
@@ -214,8 +229,15 @@ const EmployeeDashboardPage = () => {
               <Text style={styles.statusLabel}>Status: </Text>
               <Text style={styles.pendingStatus}>{request.status}</Text>
             </Text>
+            
+            {/* Scan QR Button */}
             <TouchableOpacity style={styles.qrButton} onPress={() => scanQRCode(request._id)}>
               <Text style={styles.qrButtonText}>Scan QR</Text>
+            </TouchableOpacity>
+
+            {/* Mark as Completed Button */}
+            <TouchableOpacity style={styles.completeButton} onPress={() => markAsCompleted(request._id)}>
+              <Text style={styles.completeButtonText}>Mark as Completed</Text>
             </TouchableOpacity>
           </View>
         ))
@@ -310,6 +332,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   qrButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  completeButton: {
+    marginTop: 10,
+    backgroundColor: 'green',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  completeButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },

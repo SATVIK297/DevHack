@@ -165,7 +165,7 @@ export const getServiceRequestsByEmployee = async (req, res, next) => {
     // Get the employee's designation and block
     const { designation, block: employeeBlock } = employee;
 
-    console.log(`Employee designation: ${designation}, Block: ${employeeBlock}`);
+    //console.log(`Employee designation: ${designation}, Block: ${employeeBlock}`);
 
     // Define the service types based on the employee's designation
     let serviceType;
