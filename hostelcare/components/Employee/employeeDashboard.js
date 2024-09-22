@@ -159,6 +159,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios'; // Import Axios
 import { View, Text, ScrollView, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
+import { useSelector } from 'react-redux'; // Import useSelector to get employeeId from Redux
 
 const initialLayout = { width: Dimensions.get('window').width };
 
@@ -166,15 +167,22 @@ const EmployeeDashboardPage = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [history, setHistory] = useState([]);
 
-  const employeeId = '66ef2cad6d960d4a7a293345'; // Replace with actual employee ID
+  // Get employeeId from the Redux store
+  const employeeData = useSelector(state => state.employee.employeeData); // Adjust this to your actual state shape
+ //const employeeId = '66ef2cad6d960d4a7a293345';
+ console.log('idddddd',employeeData._id)
 
+ // Log the employee data to the console to verify if it's being fetched correctly
+//  console.log('Employee Data:', employeeData);
   useEffect(() => {
-    fetchServiceRequests();
-  }, []);
+    if (employeeData._id) {
+      fetchServiceRequests();
+    }
+  }, [employeeData._id]);
 
   const fetchServiceRequests = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/v1/employee/request/${employeeId}`);
+      const response = await axios.get(`http://localhost:3000/api/v1/employee/request/${employeeData._id}`);
       const { data } = response.data;
       console.log('Fetched data:', data); // Log fetched data
 

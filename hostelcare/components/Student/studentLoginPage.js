@@ -25,13 +25,18 @@ export default function StudentLoginPage() {
           body: JSON.stringify({ email, password: passcode }),
         });
   
-        const data = await response.json();
-  
+       
+        console.log("resppp",response)
         if (response.ok) {
-          Alert.alert('Login Successful', data.message);
+          const data = await response.json();
+        console.log(data, "ergfhjjg"); // Logging parsed data
+
+        const studentData = data.rest; // Extract `rest` object which contains student details
+        console.log('studentData Data:', studentData);
+        dispatch(login(studentData));
           
           // Dispatch the login action and store the user data in Redux
-          dispatch(login(data.student)); // Assuming the backend returns the student object in `data.student`
+         // dispatch(login(data.student)); // Assuming the backend returns the student object in `data.student`
 
           Toast.show({
             text1: 'Login Successful',
